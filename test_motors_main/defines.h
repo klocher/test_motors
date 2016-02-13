@@ -3,7 +3,8 @@
 #ifndef _DEFINES_H
 #define _DEFINES_H
 
-#include <AP_HAL_Boards.h>
+// commented out to compile without full ArduRoller project
+//#include <AP_HAL_Boards.h>
 
 // Just so that it's completely clear...
 #define ENABLED                 1
