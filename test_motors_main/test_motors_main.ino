@@ -48,6 +48,10 @@ int KAL_read_serial_int16()
 {
   int value = 0, sign = 1;
 
+  /* wait until something to parse */
+  while (Serial.available() == 0);
+
+  /* ok, now parse */
   while (Serial.available()) {
     char c = Serial.read();
     if ( isDigit(c) ) 
