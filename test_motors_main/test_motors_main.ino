@@ -2,8 +2,8 @@
 #include "defines.h"   // get definitions of ANx ports
 
 //#include "RCOutput.h"
-#define CH_1 0
-#define CH_2 1
+#define CH_1 0  // LEFT_MOT_CH = 0
+#define CH_2 1  // RIGHT_MOT_CH = 1
 
 #define FORWARD  0
 #define BACKWARD 1
@@ -14,7 +14,7 @@ void setup() {
   Serial.begin(9600);
   
   // setup pwm ports:
-  KAL_init_pwm();
+//  KAL_init_pwm();
 
 }
 
@@ -70,8 +70,8 @@ int KAL_read_serial_int16()
 /**********************************************/
 void KAL_init_pwm() 
 {
-  pinMode(12, OUTPUT);  // CH_1 (PB6 / OC1B)
-  pinMode(11, OUTPUT);  // CH_2 (PB5 / OC1A)
+  pinMode(12, OUTPUT);  // Left CH_1 (PB6 / OC1B) - Digital pin 12 on Arduino mega
+  pinMode(11, OUTPUT);  // Right CH_2 (PB5 / OC1A) - Digital pin 11 on Arduino mega
 
 // Timer 1 is a 16 bit timer
 //
