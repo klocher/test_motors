@@ -8,14 +8,23 @@
 #define FORWARD  0
 #define BACKWARD 1
 
+/* use ADC1 and ADC2 as directional outputs */
+#define LEFT_DIR  A1
+#define RIGHT_DIR A2
+
+
 void setup() {
 
   /* setup serial */
   Serial.begin(9600);
-  
-  // setup pwm ports:
-//  KAL_init_pwm();
 
+  /* setup directional ports */
+  KAL_init_dir();
+
+  // setup pwm ports:
+  KAL_init_pwm();
+
+  delay(1000);
 }
 
 void loop() {
@@ -36,11 +45,21 @@ void loop() {
   else {
     dir = FORWARD;
   }
+  /* spin both motors in same direction */
+  digitalWrite(LEFT_DIR, dir);
+  digitalWrite(RIGHT_DIR, dir);
   
-//  KAL_enable_ch(CH_1);
-//  KAL_enable_ch(CH_2);
+  KAL_enable_ch(CH_1);
+  KAL_enable_ch(CH_2);
 
-   
+  KAL_write_pwm(CH_1, pwidth);
+  KAL_write_pwm(CH_2, pwidth);
+
+  delay(5000);
+
+//  KAL_disable_ch(CH_1);
+//  KAL_disable_ch(CH_2);
+
 
 }
 
@@ -50,6 +69,7 @@ int KAL_read_serial_int16()
 
   /* wait until something to parse */
   while (Serial.available() == 0);
+  delay(20);
 
   /* ok, now parse */
   while (Serial.available()) {
@@ -65,6 +85,18 @@ int KAL_read_serial_int16()
 }
 
 
+/************************************************/
+/* KAL_init_dir()                               */
+/* initialize ADC pins as digital output        */
+/* pins PF1/ADC1 and PF2/ADC2 on Atmel Mega 2560*/
+/************************************************/
+void KAL_init_dir() 
+{
+  pinMode(LEFT_DIR, OUTPUT);   // Left PF1/ADC1 - Digital pin 55 on Arduino mega
+  pinMode(RIGHT_DIR, OUTPUT);  // Left PF2/ADC6 - Digital pin 56 on Arduino mega
+
+  return;
+}
 
 
 /**********************************************/
@@ -76,6 +108,7 @@ void KAL_init_pwm()
 {
   pinMode(12, OUTPUT);  // Left CH_1 (PB6 / OC1B) - Digital pin 12 on Arduino mega
   pinMode(11, OUTPUT);  // Right CH_2 (PB5 / OC1A) - Digital pin 11 on Arduino mega
+  
 
 // Timer 1 is a 16 bit timer
 //
@@ -134,7 +167,36 @@ void KAL_enable_ch (uint8_t ch)
   return; 
 }
 
-void write_pwm(uint8_t ch, uint16_t period_us)
+/**********************************************/
+/* KAL_disable_ch()                           */
+/* diable PWM Timer output                    */
+/* which drives PB6/OC1B and PB5/OC1A         */
+/**********************************************/
+void KAL_disable_ch (uint8_t ch)
+{
+// [COMxA1, COMxA0] 
+//    0, 0 : OCxA disconnected
+//    1, 0 : clear OCxA on compare match, set OCxA at BOTTOM (non-inverting mode)
+// [COMxB1, COMxB0]
+//    0, 0 : OCxB disconnected
+//    1, 0 : clear OCxB on compare match, set OCxB at BOTTOM (non-inverting mode)
+//
+    switch (ch) {
+    case 0: 
+      TCCR1A &= !(1 << COM1B1);  // CH_1 : OC1B
+      break;
+    case 1:
+      TCCR1A &= !(1 << COM1A1);  // CH_2 : OC1A
+      break;
+    default:
+      Serial.print("Fell into default case in enable_ch()");
+      break;
+  }
+  return; 
+}
+
+
+void KAL_write_pwm(uint8_t ch, uint16_t period_us)
 {
   uint16_t pwm = period_us << 1;
 
